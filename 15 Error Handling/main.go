@@ -67,6 +67,18 @@ func closeFile(f *os.File) {
 	}
 }
 
+/*
+	-> Other uses of defer (beyond the file.Close example given earlier) include 
+
+	releasing a mutex:
+	mu.Lock()
+	defer mu.Unlock()
+
+	printing a footer:
+	printHeader()
+	defer printFooter()
+*/
+
 func PanicExample() {
 	// Note: We use the panic statement to immediately end the execution of the program. If our program reaches a point where it cannot be recovered due to some major errors, it's best to use panic.
 	fmt.Println("Help! Something bad is happening.")
