@@ -102,7 +102,9 @@ func PanicExample() {
 func RecoverExample() {
 	// Note: The panic statement immediately terminates the program. However, sometimes it might be important for a program to complete its execution and get some required results.
 	// In such cases, we use the recover statement to handle panic in Go. The recover statement prevents the termination of the program and recovers the program from panic.
-	// Recover is a built-in function that regains control of a panicking goroutine
+	// -> Recover is a built-in function that regains control of a panicking goroutine
+	// -> Recover is only useful inside deferred functions.
+	// -> During normal execution, a call to recover will return nil and have no other effect. If the current goroutine is panicking, a call to recover will capture the value given to panic and resume normal execution.
 
 	division(4, 2)
 	division(8, 0)
@@ -135,33 +137,36 @@ func handlePanic() {
 }
 
 /*
-	? Panic is a built-in function that stops the ordinary flow of control and begins panicking. When the function F calls panic, execution of F stops, any deferred functions in F are executed normally, and then F returns to its caller. So if a defered function is called before panicking, will it still be called once panicking starts? give example with outputs to show.
+	Panic is a built-in function that stops the ordinary flow of control and begins panicking. 
+	When the function F calls panic, execution of F stops, any deferred functions in F are executed normally, and then F returns to its caller. 
 
-	-> Deferred functions in Go will still be executed even if ⁠panic is called before the deferred function is scheduled to run. Here's why and an example to illustrate it: Deferred Functions and Panics.
+	?	So if a defered function is called before panicking, will it still be called once panicking starts? give example with outputs to show.
+
+	->	Deferred functions in Go will still be executed even if ⁠panic is called before the deferred function is scheduled to run. Here's why and an example to illustrate it: Deferred Functions and Panics.
 
 	*	Deferred functions are stack-based: When you use ⁠defer, the function you specify is added to a stack associated with the current function. This stack is processed in reverse order when the function returns (either normally or due to a panic).
 	*	Panic unwinds the stack: When ⁠panic is called, the program unwinds the call stack, running deferred functions in reverse order as it goes.
 
 	-> Example:
-	package main
+		package main
 
-	import "fmt"
+		import "fmt"
 
-	func myFunc() {
-		defer fmt.Println("Deferred 1")
-		defer fmt.Println("Deferred 2")
+		func myFunc() {
+			defer fmt.Println("Deferred 1")
+			defer fmt.Println("Deferred 2")
 
-		fmt.Println("Inside myFunc")
-		panic("Oops!") // Trigger a panic
-		fmt.Println("This line won't execute") // This code is unreachable
-	}
+			fmt.Println("Inside myFunc")
+			panic("Oops!") // Trigger a panic
+			fmt.Println("This line won't execute") // This code is unreachable
+		}
 
-	func main() {
-		defer fmt.Println("Deferred in main")
-		myFunc()
-		fmt.Println("This line won't execute either") 
-	}
-	
+		func main() {
+			defer fmt.Println("Deferred in main")
+			myFunc()
+			fmt.Println("This line won't execute either") 
+		}
+
 	-> Output:
 		Inside myFunc
 		Deferred 2
