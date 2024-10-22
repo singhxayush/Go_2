@@ -1,0 +1,174 @@
+How http.HandleFunc Works
+
+    Function Registration:
+    http.HandleFunc registers the function with the default mux. 
+    This function creates an http.HandlerFunc from the provided 
+    function and adds it to the mux with the specified pattern.
+    Internally, http.HandleFunc uses http.Handle to 
+    register the http.HandlerFunc.
+
+
+    Pattern Matching and Routing:
+    The ServeMux maintains the registered routes and uses the registered 
+    patterns to match incoming requests. When a request matches a pattern, 
+    the corresponding handler is invoked.
+
+
+------------------------------------------------------------------------------------------------------------------
+http.Handler Interface:
+
+    At its core, everything in the Go HTTP server framework revolves 
+    around the http.Handler interface, which has a single method ServeHTTP. 
+    Any type that implements this interface can be used as an HTTP handler.
+
+
+------------------------------------------------------------------------------------------------------------------
+http.Handler: A low-level interface for handling HTTP requests.
+http.HandlerFunc: A type that wraps a function to make it an http.Handler.
+http.HandleFunc: A convenience function for registering a handler function with the default mux.
+
+
+------------------------------------------------------------------------------------------------------------------
+The Go http.Handler interface is fundamental to how HTTP requests 
+are processed in Go's HTTP server. It defines a single method, ServeHTTP, 
+which handles HTTP requests. Here's an in-depth explanation of the key 
+points from the documentation:
+
+type Handler interface {
+    ServeHTTP(http.ResponseWriter, *http.Request)
+}
+
+Handler is an interface that requires any type that implements it to define a method ServeHTTP.
+
+ServeHTTP Method: 
+    The ServeHTTP method's signature is:
+    ServeHTTP(w http.ResponseWriter, r *http.Request)
+
+    Responsibilities of ServeHTTP
+
+    Write reply headers and data: 
+        The handler is responsible for sending the HTTP response, 
+        which includes status codes, headers, and response body.
+
+    Returning signals completion: 
+        When the handler function returns, it signals that the request 
+        has been processed. At this point, the server knows that the 
+        response has been sent.
+
+
+------------------------------------------------------------------------------------------------------------------
+Here's a detailed comparison of http.HandlerFunc and http.HandleFunc:
+
+    1. http.HandlerFunc
+
+    - What It Is: A type that adapts a function with the signature func(http.ResponseWriter, *http.Request) 
+    to the http.Handler interface.
+
+    - Definition: http.HandlerFunc is a type in the Go standard library's net/http package. 
+    It is essentially a wrapper around a function with the signature 
+    func(http.ResponseWriter, *http.Request). This type implements the http.Handler interface.
+
+    - Purpose: It allows you to use a function as an http.Handler without 
+    needing to define a custom type with a ServeHTTP method.
+
+    - Usage:
+    Declaration: You create an http.HandlerFunc by directly assigning a 
+    function of the correct signature.
+
+    - How It Works: The http.HandlerFunc type implements the ServeHTTP method by 
+    calling the function it wraps. When a request is received, the ServeHTTP method of
+
+        http.HandleFunc("/welcome", func(w http.ResponseWriter, r *http.Request) {
+            fmt.Fprintln(w, "Welcome to the site!")
+        })
+
+    2. http.HandleFunc
+
+    - Definition: http.HandleFunc is a convenience function in the net/http 
+    package that registers a handler function with the default HTTP 
+    multiplexer (or mux). It takes a URL pattern and a function with the 
+    signature func(http.ResponseWriter, *http.Request).
+
+    - Purpose: It simplifies routing by directly associating URL patterns with 
+    handler functions. Internally, it converts the function into an http.Handler 
+    using http.HandlerFunc.
+
+    - Usage:
+    Declaration: You call http.HandleFunc with a URL pattern and a function. 
+    The function will be automatically converted to an http.Handler using http.HandlerFunc.
+
+    - How It Works: When you call http.HandleFunc, it registers the provided 
+    function as a handler for the specified URL pattern. It internally uses 
+    http.HandlerFunc to wrap the function and add it to the default mux.
+
+        func myHandler(w http.ResponseWriter, r *http.Request) {
+            fmt.Fprintln(w, "This is my handler")
+        }
+
+        handler := http.HandlerFunc(myHandler)
+
+        In the code snippet you've provided, the http.HandlerFunc type is used to wrap a function (myHandler) into a type that implements the http.Handler interface.
+        However, this code alone does not incorporate routing or multiplexing; it simply creates a handler for handling HTTP requests.
+
+        > Incorporating Multiplexing (Routing)
+
+            - To use the created handler with routing, you need to register it with a multiplexer 
+            (often called a router) that directs incoming requests to the appropriate handler 
+            based on the URL path.
+
+            mux := http.NewServeMux()
+            mux.Handle("/hello", http.HandlerFunc(myHandler))
+
+            - - - - - - - - - - - - - - - - - -
+
+            func main() {
+                mux := http.NewServeMux() // Create a new ServeMux instance
+
+                mux.Handle("/hello", http.HandlerFunc(myHandler)) // Register the handler with a route
+
+                // Start the HTTP server
+                http.ListenAndServe(":8080", mux)
+            }
+
+
+Summary of Differences
+
+    Function vs. Convenience:
+    - http.HandlerFunc: A type that wraps a function to satisfy the 
+    http.Handler interface.
+    - http.HandleFunc: A convenience function that registers a handler 
+    function with the default HTTP mux.
+
+    Direct Usage:
+    - http.HandlerFunc: You manually create an instance of http.HandlerFunc 
+    when you need to use a function as an http.Handler explicitly.
+    - http.HandleFunc: You use this function to automatically convert and 
+    register a function as an HTTP handler with the default mux.
+
+    Context of Use:
+    - http.HandlerFunc: Used when you need a handler that isn't directly associated 
+    with the default mux or when you want to create handlers programmatically.
+    - http.HandleFunc: Used for simple and direct routing setup with the default 
+    mux, which is convenient for many applications.
+
+
+------------------------------------------------------------------------------------------------------------------
+Traditional Way of Implementing Middlewares
+
+    - In Go, middleware functions generally don't care about the specific 
+    request method (like GET, POST, etc.). Instead, their primary role is 
+    to modify or inspect the incoming request or outgoing response, 
+    regardless of the method.
+
+    - However, if you want middleware to behave differently based on the request 
+    method, you can explicitly check r.Method within the middleware.
+    But traditionally, the middleware pattern in Go just wraps around 
+    handlers and doesn't care about the specific HTTP method unless needed.
+
+Here's how the middleware flow works:
+
+    - Middleware wraps around your handler (or mux) to perform some actions 
+    before and after the handler processes the request.
+
+    - Middleware is often used for logging, authentication, validation, 
+    or response modification.
