@@ -1,0 +1,14 @@
+Go concurrency pattern has 3 main parts.
+1. Go routines
+2. Channels
+3. Select
+
+- - - - - - - - - - - - - - - - - - - - -
+Go routines: Go routines in Go are lightweight, concurrent functions or methods that run independently of each other.
+  - main is also a go routine
+
+- - - - - - - - - - - - - - - - - - - - -
+Channels: Channels are used to communicate information between go routines since Go routines are independent.
+
+- - - - - - - - - - - - - - - - - - - - -
+Select:
