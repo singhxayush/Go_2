@@ -32,13 +32,17 @@ func main() {
 		myChannel <- "data from channel: myChannel"
 	}()
 
+	// go func() {
+	// 	myChannel <- "2nd data from channel myCHannel"
+	// }()
+
 	go func() {
 		myChannel2 <- "data from channel: myChannel2"
 	}()
 
 	// main being one of the go routines accessing that message form the channel
-	// msg := <-myChannel // this is actually blocking in nature, main waits for the channel to close or receiving any message before moving forward
-	// fmt.Println(msg)
+	msg := <-myChannel // this is actually blocking in nature, main waits for the channel to close or receiving any message before moving forward
+	fmt.Println(msg)
 
 	select {
 	case msgFromMyChannel := <-myChannel:

@@ -10,5 +10,7 @@ Go routines: Go routines in Go are lightweight, concurrent functions or methods 
 - - - - - - - - - - - - - - - - - - - - -
 Channels: Channels are used to communicate information between go routines since Go routines are independent.
 
+- Data within a channel can only jump from one go routine(main) to another go routine
+
 - - - - - - - - - - - - - - - - - - - - -
 Select:
